@@ -17,12 +17,12 @@ export default function AboutView() {
       <div className="sec-label mt-10">Data sources</div>
       <ul className="prose space-y-2 text-sm" style={{ color: 'var(--text-2)' }}>
         <li>
-          › <strong>Orbital elements</strong> — CelesTrak general-perturbation (GP) elements in
-          OMM JSON, collected with one <code>NAME=</code> query per SAR mission family, merged,
-          deduplicated by NORAD ID and filtered against the curated registry. Fetched by the
-          backend only (default every 6 h), cached in SQLite, and served to every browser session
-          from that cache. If CelesTrak is unreachable the last valid set keeps serving and the
-          header chip flips from LIVE to STALE once it is older than 24 h.
+          › <strong>Orbital elements</strong> — CelesTrak general-perturbation (GP) elements in OMM
+          JSON, collected with one <code>NAME=</code> query per SAR mission family, merged,
+          deduplicated by NORAD ID and filtered against the curated registry. Fetched by the backend
+          only (default every 6 h), cached in SQLite, and served to every browser session from that
+          cache. If CelesTrak is unreachable the last valid set keeps serving and the header chip
+          flips from LIVE to STALE once it is older than 24 h.
         </li>
         <li>
           › <strong>Mission &amp; sensor metadata</strong> — a curated registry compiled only from

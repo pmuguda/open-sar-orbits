@@ -1,11 +1,13 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 
 import pytest
 
 from app.registry import RegistryError, validate_seed
-from tests.conftest import SEED_PATH
+
+SEED_PATH = Path(__file__).parent.parent / "data" / "registry_seed.json"
 
 
 def test_seed_file_is_valid():
