@@ -20,10 +20,15 @@ export function useAppData(): void {
       const [orbits, satellites] = await Promise.all([fetchOrbits(), fetchSatellites()]);
       if (cancelled) return;
       lastFetchedAt = orbits.fetched_at;
+      // recompute age locally: in static mode the baked age_seconds is 0 at
+      // export time, and even live responses age while displayed
+      const ageSeconds = orbits.fetched_at
+        ? (Date.now() - Date.parse(orbits.fetched_at)) / 1000
+        : orbits.age_seconds;
       setData(satellites, validOmmRecords(orbits.records), {
         fetchedAt: orbits.fetched_at,
-        ageSeconds: orbits.age_seconds,
-        stale: orbits.stale,
+        ageSeconds,
+        stale: orbits.stale || ageSeconds > 24 * 3600,
         recordCount: orbits.record_count,
       });
     }

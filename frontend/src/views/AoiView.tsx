@@ -28,8 +28,9 @@ export default function AoiView() {
           <span className="chip">{'{ }'} PHASE 2 — UI IN PROGRESS</span>
         </p>
         <p className="prose mt-3 text-sm" style={{ color: 'var(--text-2)' }}>
-          The prediction engine is already live on the backend. Until the drawing tools land you can
-          query it directly:
+          The prediction engine is already live on the backend (the hosted GitHub Pages demo is a
+          static snapshot without it — run the backend locally). Until the drawing tools land you
+          can query it directly:
         </p>
         <pre
           className="mt-3 overflow-x-auto border p-3 text-[11px] leading-relaxed hairline"
