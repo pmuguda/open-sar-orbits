@@ -6,6 +6,10 @@ catalogued **Synthetic Aperture Radar (SAR)** satellites and helps you answer:
 > **Which SAR satellites can potentially observe a selected area, and when will
 > they pass nearby?**
 
+**Live demo:** [www.pmuguda.com/open-sar-orbits](https://www.pmuguda.com/open-sar-orbits/) —
+a static GitHub Pages build; a scheduled Action refreshes the orbital snapshot from
+CelesTrak every 6 hours (AOI pass prediction needs the backend, run locally).
+
 More than a generic satellite tracker, it combines:
 
 1. SAR satellite orbit visualisation (CesiumJS 3D globe)
