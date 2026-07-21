@@ -1,56 +1,54 @@
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 
-import { constellationStyle } from '../lib/constellations';
 import { filterSatellites } from '../lib/filtering';
 import { useAppStore } from '../store/appStore';
 
-/** Map-layer legend: colour + glyph per visible constellation (never colour alone). */
+const BAND_COLORS: Record<string, string> = {
+  C: 'var(--signal)',
+  X: 'oklch(0.79 0.115 228)',
+  L: 'oklch(0.72 0.185 40)',
+  S: 'oklch(0.83 0.135 82)',
+  P: 'oklch(0.65 0.15 300)',
+  'L+S': 'oklch(0.72 0.12 200)',
+};
+
+/** Top-left quick chips: frequency-band tallies, click to filter by band. */
 export default function Legend() {
   const satellites = useAppStore((s) => s.satellites);
   const filters = useAppStore((s) => s.filters);
-  const [open, setOpen] = useState(true);
+  const setFilters = useAppStore((s) => s.setFilters);
 
-  const constellations = useMemo(() => {
-    const names = new Map<string, number>();
-    for (const sat of filterSatellites(satellites, filters)) {
-      const name = sat.registry?.constellation ?? 'Uncatalogued';
-      names.set(name, (names.get(name) ?? 0) + 1);
+  const bands = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const sat of filterSatellites(satellites, { ...filters, band: '' })) {
+      const band = sat.registry?.frequency_band;
+      if (band) counts.set(band, (counts.get(band) ?? 0) + 1);
     }
-    return [...names.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    return [...counts.entries()].sort((a, b) => b[1] - a[1]);
   }, [satellites, filters]);
 
-  if (constellations.length === 0) return null;
+  if (bands.length === 0) return null;
 
   return (
-    <div className="absolute bottom-4 left-4 z-10 max-w-56">
-      <div className="panel hairline border" style={{ background: 'var(--bg-2)' }}>
-        <button
-          className="panel-label flex w-full items-center justify-between px-2 py-1"
-          onClick={() => setOpen(!open)}
-          aria-expanded={open}
-        >
-          Legend <span>{open ? '−' : '+'}</span>
-        </button>
-        {open && (
-          <ul
-            className="max-h-56 overflow-y-auto px-2 pb-2 text-xs"
-            style={{ color: 'var(--text-2)' }}
+    <div className="maplegend" role="group" aria-label="Filter by frequency band">
+      {bands.map(([band, count]) => {
+        const active = filters.band === band;
+        const dimmed = filters.band !== '' && !active;
+        return (
+          <button
+            key={band}
+            className={`lg${dimmed ? ' off' : ''}`}
+            aria-pressed={active}
+            title={active ? 'Clear band filter' : `Show only ${band}-band satellites`}
+            style={{ ['--sc' as string]: BAND_COLORS[band] ?? 'var(--accent)' }}
+            onClick={() => setFilters({ band: active ? '' : band })}
           >
-            {constellations.map(([name, count]) => {
-              const style = constellationStyle(name === 'Uncatalogued' ? null : name);
-              return (
-                <li key={name} className="flex items-center gap-2 py-0.5">
-                  <span className="sat-glyph" style={{ background: style.color }}>
-                    {style.glyph}
-                  </span>
-                  <span className="min-w-0 flex-1 truncate">{name}</span>
-                  <span className="num faint">{count}</span>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+            <span className="d"></span>
+            {band}
+            <span className="n num">{count}</span>
+          </button>
+        );
+      })}
     </div>
   );
 }

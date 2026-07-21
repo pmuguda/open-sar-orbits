@@ -7,12 +7,14 @@ from typing import Any, Optional
 from fastapi import APIRouter, HTTPException, Request
 
 from ..passes import orbital_period_minutes
+from ..registry import Registry
 
 router = APIRouter(prefix="/api/satellites", tags=["satellites"])
 
 
-def _merged_record(request: Request, record: dict[str, Any]) -> dict[str, Any]:
-    registry = request.app.state.registry
+def merge_record(registry: Registry, record: dict[str, Any]) -> dict[str, Any]:
+    """Join one OMM record with curated registry metadata (also used by the
+    static-site exporter, so it must not depend on a request context)."""
     entry, match = registry.enrich(record.get("NORAD_CAT_ID"), record.get("OBJECT_NAME", ""))
     return {
         "norad_catalog_id": record.get("NORAD_CAT_ID"),
@@ -48,7 +50,7 @@ def list_satellites(
     cache = request.app.state.cache.latest()
     if cache is None:
         return []
-    items = [_merged_record(request, record) for record in cache.records]
+    items = [merge_record(request.app.state.registry, record) for record in cache.records]
 
     if q:
         needle = q.lower()
@@ -74,7 +76,7 @@ def get_satellite(request: Request, norad_id: int) -> dict[str, Any]:
     if cache is not None:
         for record in cache.records:
             if record.get("NORAD_CAT_ID") == norad_id:
-                return _merged_record(request, record)
+                return merge_record(request.app.state.registry, record)
 
     # fall back to a registry-only view (no live orbit)
     registry = request.app.state.registry

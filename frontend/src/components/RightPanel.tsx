@@ -9,22 +9,14 @@ import { globeBridge } from './globeBridge';
 
 function Row({ k, v, title }: { k: string; v: string; title?: string }) {
   return (
-    <>
-      <dt title={title}>{k}</dt>
-      <dd className="num">{v}</dd>
-    </>
+    <tr title={title}>
+      <td>{k}</td>
+      <td>{v}</td>
+    </tr>
   );
 }
 
-function LinkRow({ label, url }: { label: string; url: string | null | undefined }) {
-  if (!url) return null;
-  return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="block truncate text-xs">
-      › {label}
-    </a>
-  );
-}
-
+/** Overlay detail panel (right edge), same pattern as the triad scene panel. */
 export default function RightPanel() {
   const selectedId = useAppStore((s) => s.selectedId);
   const satellites = useAppStore((s) => s.satellites);
@@ -59,71 +51,50 @@ export default function RightPanel() {
     return () => window.clearInterval(timer);
   }, [satrec]);
 
-  if (!open) {
-    return (
-      <button
-        className="hairline w-6 flex-none border-l text-xs"
-        style={{ background: 'var(--bg-2)', color: 'var(--text-3)' }}
-        onClick={() => togglePanel('right')}
-        title="Open the detail panel"
-        aria-label="Open the detail panel"
-      >
-        ‹
-      </button>
-    );
-  }
+  if (!sat) return null;
 
-  const registry = sat?.registry ?? null;
+  const registry = sat.registry ?? null;
   const style = constellationStyle(registry?.constellation);
-  const epochAgeS = sat?.epoch ? (simMs - Date.parse(sat.epoch)) / 1000 : null;
+  const epochAgeS = sat.epoch ? (simMs - Date.parse(sat.epoch)) / 1000 : null;
+  const visible = open;
 
   return (
-    <aside className="panel hairline flex w-80 flex-none flex-col border-l">
-      <div className="hairline flex items-center justify-between border-b px-3 py-2">
-        <span className="panel-label">Satellite detail</span>
-        <button
-          className="btn btn--ghost"
-          style={{ padding: '0 6px' }}
-          onClick={() => togglePanel('right')}
-          title="Collapse the detail panel"
-          aria-label="Collapse the detail panel"
+    <>
+      <button
+        className={`detail-toggle${visible ? '' : ' closed'}`}
+        title={visible ? 'Hide the detail panel' : 'Show the detail panel'}
+        aria-label={visible ? 'Hide the detail panel' : 'Show the detail panel'}
+        onClick={() => togglePanel('right')}
+      >
+        <svg
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          strokeLinecap="round"
         >
-          ›
-        </button>
-      </div>
+          <path d="M6 3l5 5-5 5" />
+        </svg>
+      </button>
 
-      {!sat ? (
-        <p className="code-deco p-4 text-xs">select a satellite on the globe or in the list</p>
-      ) : (
-        <div className="panel-scroll flex-1 space-y-4 p-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="sat-glyph" style={{ background: style.color }}>
-                {style.glyph}
-              </span>
-              <h2 className="text-sm" style={{ color: 'var(--white)' }}>
-                {sat.object_name}
-              </h2>
-            </div>
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              {registry?.constellation && <span className="tag">{registry.constellation}</span>}
-              {registry?.status && (
-                <span className={registry.status === 'active' ? 'chip chip--signal' : 'chip'}>
-                  {registry.status}
-                </span>
-              )}
-              {registry?.open_data_available === 'yes' && <span className="tag">open data</span>}
-            </div>
-            {sat.registry_match === 'pattern' && (
-              <p className="faint mt-1 text-[11px]">
-                constellation-level metadata (name-pattern match)
-              </p>
+      <div className={`detail-panel${visible ? '' : ' hidden'}`} aria-label="Satellite detail">
+        <div className="detail-content">
+          <div className="detail-provider" style={{ ['--sc' as string]: style.color }}>
+            <span className="d"></span>
+            {registry?.constellation ?? 'Uncatalogued'}
+            {registry?.status && (
+              <span style={{ marginLeft: 'auto', color: 'var(--ink-3)' }}>{registry.status}</span>
             )}
           </div>
+          <h2 className="detail-name">{sat.object_name}</h2>
+          <div className="detail-id">
+            NORAD {sat.norad_catalog_id} · {sat.international_designator ?? UNKNOWN}
+            {sat.registry_match === 'pattern' && ' · constellation-level metadata'}
+          </div>
 
-          <div>
-            <span className="panel-label">Live state · simulation time</span>
-            <dl className="kv mt-1" aria-live="polite">
+          <div className="detail-sec">Live state · sim time</div>
+          <table className="detail-table" aria-live="polite">
+            <tbody>
               <Row k="Latitude" v={live ? fmtNum(live.latDeg, 3, '°') : UNKNOWN} />
               <Row k="Longitude" v={live ? fmtNum(live.lonDeg, 3, '°') : UNKNOWN} />
               <Row k="Altitude" v={live ? fmtNum(live.altKm, 1, ' km') : UNKNOWN} />
@@ -133,15 +104,16 @@ export default function RightPanel() {
                 v={live ? (live.ascending ? 'ascending ↑' : 'descending ↓') : UNKNOWN}
                 title="Ascending = moving south to north"
               />
-            </dl>
-          </div>
+            </tbody>
+          </table>
 
-          <div>
-            <span className="panel-label">Orbit</span>
-            <dl className="kv mt-1">
-              <Row k="NORAD ID" v={String(sat.norad_catalog_id)} />
-              <Row k="Intl desig" v={fmt(sat.international_designator)} />
-              <Row k="Epoch" v={fmt(sat.epoch?.replace('T', ' ').replace('Z', ' Z'))} />
+          <div className="detail-sec">Orbit</div>
+          <table className="detail-table">
+            <tbody>
+              <Row
+                k="Epoch"
+                v={sat.epoch ? sat.epoch.replace('T', ' ').slice(0, 19) + 'Z' : UNKNOWN}
+              />
               <Row
                 k="Element age"
                 v={fmtAge(epochAgeS)}
@@ -150,12 +122,12 @@ export default function RightPanel() {
               <Row k="Inclination" v={fmtNum(sat.inclination_deg, 2, '°')} />
               <Row k="Period" v={fmtNum(sat.period_minutes, 1, ' min')} />
               <Row k="Repeat cycle" v={fmt(registry?.repeat_cycle_days, ' d')} />
-            </dl>
-          </div>
+            </tbody>
+          </table>
 
-          <div>
-            <span className="panel-label">SAR sensor</span>
-            <dl className="kv mt-1">
+          <div className="detail-sec">SAR sensor</div>
+          <table className="detail-table">
+            <tbody>
               <Row k="Band" v={fmt(registry?.frequency_band)} />
               <Row k="Centre freq" v={fmt(registry?.centre_frequency_ghz, ' GHz')} />
               <Row k="Polarisation" v={registry?.polarisation_modes?.join(', ') ?? UNKNOWN} />
@@ -180,47 +152,68 @@ export default function RightPanel() {
                 }
               />
               <Row k="Open data" v={fmt(registry?.open_data_available)} />
-            </dl>
-          </div>
+            </tbody>
+          </table>
 
-          <div>
-            <span className="panel-label">Mission</span>
-            <dl className="kv mt-1">
+          <div className="detail-sec">Mission</div>
+          <table className="detail-table">
+            <tbody>
               <Row k="Operator" v={fmt(registry?.operator)} />
               <Row k="Country" v={fmt(registry?.country)} />
               <Row k="Launched" v={fmt(registry?.launch_date)} />
-            </dl>
-            <div className="mt-2 space-y-1">
-              <LinkRow label="Mission documentation" url={registry?.documentation_url} />
-              <LinkRow label="Data archive" url={registry?.archive_url} />
-              <LinkRow label="Operator site" url={registry?.provider_url} />
-            </div>
-            {registry?.metadata_source && (
-              <p className="faint mt-2 text-[10px]">
-                metadata: {registry.metadata_source} · verified {registry.metadata_last_verified}
-              </p>
-            )}
-          </div>
+            </tbody>
+          </table>
 
-          <div className="flex gap-2">
+          <div className="detail-actions">
             <button
-              className={follow ? 'btn flex-1' : 'btn btn--outline flex-1'}
-              style={{ padding: '6px 0', justifyContent: 'center' }}
+              className="detail-action-btn primary"
               aria-pressed={follow}
               onClick={() => setFollow(!follow)}
             >
-              {follow ? 'Following' : 'Follow'}
+              {follow ? '◉ Following — click to release' : '○ Follow with camera'}
             </button>
-            <button
-              className="btn btn--outline flex-1"
-              style={{ padding: '6px 0', justifyContent: 'center' }}
-              onClick={() => select(null)}
-            >
-              Deselect
+            {registry?.documentation_url && (
+              <a
+                className="detail-action-btn"
+                href={registry.documentation_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Mission documentation ↗
+              </a>
+            )}
+            {registry?.archive_url && (
+              <a
+                className="detail-action-btn"
+                href={registry.archive_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Data archive ↗
+              </a>
+            )}
+            {registry?.provider_url && (
+              <a
+                className="detail-action-btn"
+                href={registry.provider_url}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Operator site ↗
+              </a>
+            )}
+            <button className="detail-action-btn" onClick={() => select(null)}>
+              ✕ Deselect
             </button>
           </div>
+
+          {registry?.metadata_source && (
+            <p className="detail-note">
+              metadata: {registry.metadata_source} · verified {registry.metadata_last_verified}
+            </p>
+          )}
         </div>
-      )}
-    </aside>
+      </div>
+    </>
   );
 }

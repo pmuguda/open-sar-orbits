@@ -1,9 +1,9 @@
 import ClockControls from './components/ClockControls';
+import Console from './components/Console';
+import Coordbar from './components/Coordbar';
 import GlobeView from './components/GlobeView';
-import LeftPanel from './components/LeftPanel';
 import Legend from './components/Legend';
 import RightPanel from './components/RightPanel';
-import TopBar from './components/TopBar';
 import { useAppData } from './hooks/useAppData';
 import { fmtAge } from './lib/format';
 import { useAppStore } from './store/appStore';
@@ -16,70 +16,67 @@ export default function App() {
   const loading = useAppStore((s) => s.loading);
   const error = useAppStore((s) => s.error);
   const cacheMeta = useAppStore((s) => s.cacheMeta);
+  const leftOpen = useAppStore((s) => s.leftOpen);
+  const togglePanel = useAppStore((s) => s.togglePanel);
 
   return (
-    <div className="flex h-full flex-col font-mono">
-      <TopBar />
+    <div className={`app${leftOpen ? '' : ' collapsed'}`}>
+      <Console />
 
-      {cacheMeta.stale && (
-        <div
-          className="flex-none px-4 py-1 text-center text-xs"
-          style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
-          role="status"
-        >
-          Serving cached orbital data from {fmtAge(cacheMeta.ageSeconds)} ago — CelesTrak has not
-          been reachable. Positions may be inaccurate.
+      <button
+        className="collapse"
+        aria-label="Toggle console"
+        title="Toggle console"
+        onClick={() => togglePanel('left')}
+      >
+        <span className="cv">‹</span>
+      </button>
+
+      <main className="viewport">
+        <GlobeView />
+
+        {/* instrument chrome */}
+        <div className="mo" aria-hidden="true">
+          <div className="corner tl"></div>
+          <div className="corner tr"></div>
+          <div className="corner bl"></div>
+          <div className="corner br"></div>
         </div>
-      )}
 
-      <div className="relative flex min-h-0 flex-1">
-        <LeftPanel />
-
-        <main className="relative min-w-0 flex-1" style={{ background: 'var(--bg)' }}>
-          <GlobeView />
-          <ClockControls />
-          <Legend />
-
-          {loading && (
-            <div
-              className="absolute inset-0 z-20 flex items-center justify-center"
-              style={{ background: 'color-mix(in srgb, var(--bg) 70%, transparent)' }}
-              role="status"
-            >
-              <span className="chip chip--live">ACQUIRING ORBITAL ELEMENTS</span>
-            </div>
-          )}
-
-          {error && (
-            <div className="absolute inset-x-0 top-4 z-20 flex justify-center px-4">
-              <div
-                className="card max-w-lg text-xs"
-                style={{ borderColor: 'var(--accent-line)' }}
-                role="alert"
-              >
-                <p className="card__meta">ERROR</p>
-                <p className="mt-1" style={{ color: 'var(--text)' }}>
-                  {error}
-                </p>
-                <p className="faint mt-2">
-                  Is the backend running? <code>uvicorn app.main:app --port 8000</code>
-                </p>
-              </div>
-            </div>
-          )}
-        </main>
-
+        <Coordbar />
+        <Legend />
+        <ClockControls />
         <RightPanel />
 
-        {view !== 'global' && (
-          <div
-            className="absolute inset-0 z-30 overflow-y-auto"
-            style={{ background: 'var(--bg)' }}
-          >
-            {view === 'aoi' ? <AoiView /> : <AboutView />}
+        {cacheMeta.stale && (
+          <div className="hint-banner" role="status">
+            Serving cached orbital data from {fmtAge(cacheMeta.ageSeconds)} ago — CelesTrak
+            unreachable. Positions may be inaccurate.
           </div>
         )}
-      </div>
+
+        {loading && (
+          <div className="loading-overlay" role="status">
+            <div className="spinner"></div>
+            <p>Acquiring orbital elements…</p>
+          </div>
+        )}
+
+        {error && (
+          <div className="error-card" role="alert">
+            <span className="k">Error</span>
+            {error}
+            <br />
+            <span className="faint">
+              Is the backend running? <code>uvicorn app.main:app --port 8000</code>
+            </span>
+          </div>
+        )}
+
+        {view !== 'global' && (
+          <div className="docpage">{view === 'aoi' ? <AoiView /> : <AboutView />}</div>
+        )}
+      </main>
     </div>
   );
 }
