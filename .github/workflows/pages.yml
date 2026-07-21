@@ -51,6 +51,18 @@ jobs:
           VITE_STATIC_DATA: '1'
         run: npm run build -- --base=/open-sar-orbits/
 
+      # vite-plugin-cesium mishandles a non-root base: it references
+      # <base>/cesium/... in index.html but copies the bundle to
+      # dist/<base>/cesium. Move it where the URLs actually resolve.
+      - name: Fix Cesium asset location under non-root base
+        working-directory: frontend
+        run: |
+          if [ -d dist/open-sar-orbits/cesium ]; then
+            mv dist/open-sar-orbits/cesium dist/cesium
+            rmdir dist/open-sar-orbits
+          fi
+          test -f dist/cesium/Cesium.js
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: frontend/dist
