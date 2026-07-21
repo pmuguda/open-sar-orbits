@@ -1,0 +1,36 @@
+[
+  {},
+  {
+    "OBJECT_NAME": "NEGATIVE ID",
+    "EPOCH": "2026-07-20T12:00:00",
+    "MEAN_MOTION": 14.5,
+    "ECCENTRICITY": 0.001,
+    "INCLINATION": 98.0,
+    "RA_OF_ASC_NODE": 0,
+    "ARG_OF_PERICENTER": 0,
+    "MEAN_ANOMALY": 0,
+    "NORAD_CAT_ID": -5
+  },
+  {
+    "OBJECT_NAME": "HYPERBOLIC",
+    "EPOCH": "2026-07-20T12:00:00",
+    "MEAN_MOTION": 14.5,
+    "ECCENTRICITY": 1.5,
+    "INCLINATION": 98.0,
+    "RA_OF_ASC_NODE": 0,
+    "ARG_OF_PERICENTER": 0,
+    "MEAN_ANOMALY": 0,
+    "NORAD_CAT_ID": 12345
+  },
+  {
+    "OBJECT_NAME": "BAD EPOCH",
+    "EPOCH": "not-a-date",
+    "MEAN_MOTION": 14.5,
+    "ECCENTRICITY": 0.001,
+    "INCLINATION": 98.0,
+    "RA_OF_ASC_NODE": 0,
+    "ARG_OF_PERICENTER": 0,
+    "MEAN_ANOMALY": 0,
+    "NORAD_CAT_ID": 12346
+  }
+]

@@ -1,0 +1,24 @@
+services:
+  backend:
+    build: ./backend
+    environment:
+      # CelesTrak refresh interval in seconds (floor 3600, default 21600 = 6 h)
+      REFRESH_SECONDS: "21600"
+      STALE_AFTER_HOURS: "24"
+      CORS_ORIGINS: "http://localhost:5173,http://localhost:8080"
+    volumes:
+      - orbit-cache:/data
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "5173:80"
+    restart: unless-stopped
+
+volumes:
+  orbit-cache:

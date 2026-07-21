@@ -1,0 +1,660 @@
+/* ============================================================================
+   styles.css — "SAR Console" design system
+   Reverse-engineered from the real source:
+     · pmuguda.github.io        (hub / portfolio)
+     · open-sar-triad           (tool console)
+   Drop into any tool repo. Pairs with DESIGN.md. Vanilla, no build step.
+   ========================================================================== */
+
+/* ── Fonts: the IBM Plex family is the signature ── */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Condensed:wght@600;700&display=swap');
+
+/* ========================================================================== */
+/*  1. TOKENS                                                                  */
+/* ========================================================================== */
+:root {
+  /* DARK (default) — near-black instrument panel */
+  --bg: #050505; /* page background, also <meta theme-color> */
+  --bg-2: #0f0f0f; /* panels, cards */
+  --bg-3: #191919; /* raised surfaces, inputs */
+
+  --border: rgba(255, 255, 255, 0.1); /* hairline dividers / card edges */
+  --border-h: rgba(255, 255, 255, 0.3); /* hover / emphasis edge */
+
+  --text: #e0e0e3; /* primary text */
+  --text-2: #a0a0a3; /* secondary */
+  --text-3: #8a8a8e; /* labels, captions, metadata, "···" */
+
+  --accent: #d0973d; /* GOLD / amber — the one accent */
+  --accent-soft: rgba(208, 151, 61, 0.1); /* tinted fills */
+  --accent-line: rgba(208, 151, 61, 0.38); /* tinted borders */
+  --white: #ffffff; /* primary CTA + key headings (the "white" half) */
+  --ink-on-white: #000000; /* text on a white button */
+  --signal: #00bc70; /* live / positive status dot */
+
+  /* Categorical data series (maps, charts) */
+  --series-1: #36c98f; /* e.g. ICEYE  — green  */
+  --series-2: #5cb4d4; /* e.g. Umbra  — blue   */
+  --series-3: #e07a4f; /* e.g. Capella— orange */
+
+  --glow: 0 0 20px rgba(255, 255, 255, 0.2);
+  --glow-2: 0 0 35px rgba(255, 255, 255, 0.35);
+
+  /* Type */
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+  --font-sans: 'IBM Plex Sans', system-ui, -apple-system, sans-serif;
+  --font-cond: 'IBM Plex Sans Condensed', 'IBM Plex Sans', sans-serif;
+
+  --fs-display: clamp(2.4rem, 5.5vw, 4.2rem); /* @kind font */
+  --fs-h1: clamp(1.8rem, 3.5vw, 2.6rem); /* @kind font */
+  --fs-h2: 1.2rem;
+  --fs-body: 1rem;
+  --fs-sm: 0.82rem;
+  --fs-label: 0.72rem;
+
+  /* Spacing / radius / motion */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 24px;
+  --sp-6: 40px;
+  --sp-7: 64px;
+  --sp-8: 88px;
+  --r: 2px; /* default radius — sharp */
+  --r-0: 0px; /* fully square (tool chrome) */
+  --maxw: 1080px;
+  --t: 0.3s ease; /* @kind other */
+}
+
+/* PAPER — warm cream, not cool gray */
+[data-theme='paper'] {
+  --bg: #f2efe8;
+  --bg-2: #faf8f3;
+  --bg-3: #e7e3da;
+
+  --border: #cbc5b9;
+  --border-h: #a59e90;
+
+  --text: #353941;
+  --text-2: #5f636c;
+  --text-3: #82868f;
+
+  --accent: #b06a26; /* deeper gold for white-paper contrast */
+  --accent-soft: rgba(176, 106, 38, 0.1);
+  --accent-line: rgba(176, 106, 38, 0.4);
+  --white: #1b1b1b; /* on paper the "primary" inverts to near-black… */
+  --ink-on-white: #ffffff; /* …with light text */
+  --signal: #1a7f37;
+
+  --series-1: #1f9468;
+  --series-2: #3f7e98;
+  --series-3: #b85a30;
+
+  --glow: 0 0 20px rgba(0, 0, 0, 0.1);
+  --glow-2: 0 18px 50px -28px rgba(0, 0, 0, 0.35);
+}
+
+/* ========================================================================== */
+/*  2. BASE / RESET                                                            */
+/* ========================================================================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  font-family: var(--font-mono); /* mono is the DEFAULT voice */
+  font-size: var(--fs-body);
+  line-height: 1.7;
+  color: var(--text);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+  transition:
+    background-color 0.3s var(--t),
+    color 0.3s var(--t);
+}
+
+/* Long-form prose switches to the proportional sans — same family voice */
+.prose,
+.prose p {
+  font-family: var(--font-sans);
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+h1 {
+  font-size: var(--fs-h1);
+}
+h2 {
+  font-size: var(--fs-h2);
+}
+p {
+  text-wrap: pretty;
+  max-width: 68ch;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+  transition: var(--t);
+}
+a:hover {
+  color: var(--white);
+}
+
+::selection {
+  background: var(--accent-soft);
+  color: var(--text);
+}
+
+:where(button, input, select, textarea) {
+  font: inherit;
+}
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-line);
+  border-radius: 0;
+}
+
+.wrap {
+  max-width: var(--maxw);
+  margin-inline: auto;
+  padding-inline: var(--sp-5);
+}
+
+/* ========================================================================== */
+/*  3. TYPE UTILITIES                                                          */
+/* ========================================================================== */
+.mono {
+  font-family: var(--font-mono);
+}
+.sans {
+  font-family: var(--font-sans);
+}
+.cond {
+  font-family: var(--font-cond);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.label {
+  font: var(--fs-label)/1.3 var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+.muted {
+  color: var(--text-2);
+}
+.faint {
+  color: var(--text-3);
+}
+.num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+.display {
+  font-family: var(--font-cond);
+  font-size: var(--fs-display);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+/* ========================================================================== */
+/*  4. SIGNATURE PATTERNS                                                      */
+/* ========================================================================== */
+
+/* 4.1 Auto-numbered section label  (01 · LABEL ─────────) */
+body {
+  counter-reset: section;
+}
+.sec-label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font: var(--fs-label) var(--font-mono);
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-3);
+  margin-bottom: 0.6rem;
+  counter-increment: section;
+}
+.sec-label::before {
+  content: '0' counter(section) ' ·';
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+.sec-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.sec-title {
+  font-size: var(--fs-h1);
+  color: var(--text);
+  margin-bottom: 0.75rem;
+}
+.sec-title span {
+  color: var(--accent);
+}
+
+/* 4.2 Telemetry / coordinate strip */
+.telemetry {
+  display: flex;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  background: var(--bg-2);
+  height: 32px;
+  width: max-content;
+}
+.telemetry .seg-c {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 0 13px;
+  border-left: 1px solid var(--border);
+  font: 11px var(--font-mono);
+  letter-spacing: 0.04em;
+  color: var(--text);
+  white-space: nowrap;
+}
+.telemetry .seg-c:first-child {
+  border-left: 0;
+}
+.telemetry .k {
+  color: var(--text-3);
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+}
+.telemetry .num {
+  font-variant-numeric: tabular-nums;
+}
+.telemetry .live {
+  color: var(--accent);
+}
+.telemetry .live .blip {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  margin-right: 6px;
+  animation: blip 1.8s ease-in-out infinite;
+}
+@keyframes blip {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+
+/* 4.3 Status chip / tag-pill */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.2rem 0.65rem;
+  border: 1px solid var(--accent-line);
+  background: var(--accent-soft);
+  font: var(--fs-label) var(--font-mono);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  white-space: nowrap;
+}
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.chip--live::before {
+  animation: blink 2s ease-in-out infinite;
+}
+.chip--signal {
+  color: var(--signal);
+  border-color: color-mix(in oklab, var(--signal) 40%, var(--border));
+}
+.chip--signal::before {
+  background: var(--signal);
+}
+@keyframes blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.2;
+  }
+}
+
+/* 4.4 Code-syntax decoration */
+.code-deco {
+  font-family: var(--font-mono);
+  color: var(--text-2);
+}
+.code-deco::before {
+  content: '< ';
+  color: var(--text-3);
+}
+.code-deco::after {
+  content: ' />';
+  color: var(--text-3);
+}
+
+/* 4.5 Tags */
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+.tag {
+  padding: 0.25rem 0.65rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border);
+  border-radius: var(--r-0);
+  font: var(--fs-sm) var(--font-mono);
+  color: var(--text-2);
+  transition: var(--t);
+}
+.tag:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ========================================================================== */
+/*  5. COMPONENTS                                                              */
+/* ========================================================================== */
+
+/* Primary button — white fill, dark ink (the portfolio CTA) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1.5rem;
+  background: var(--white);
+  color: var(--ink-on-white);
+  border: 1px solid var(--white);
+  border-radius: var(--r-0);
+  font: 700 var(--fs-sm) var(--font-mono);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    box-shadow 0.3s var(--t),
+    background 0.3s var(--t),
+    border-color 0.3s var(--t),
+    color 0.3s var(--t);
+}
+.btn:hover {
+  box-shadow: var(--glow-2);
+}
+
+/* Outline button — amber on hover (the tool-console style) */
+.btn--outline {
+  background: transparent;
+  color: var(--text-2);
+  border: 1px solid var(--border-h);
+}
+.btn--outline:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: none;
+  background: var(--accent-soft);
+}
+
+.btn--ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--text-2);
+}
+.btn--ghost:hover {
+  color: var(--accent);
+  box-shadow: none;
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+/* Field / input */
+.field {
+  width: 100%;
+  height: 38px;
+  padding: 0 12px;
+  background: var(--bg-3);
+  border: 1px solid var(--border-h);
+  border-radius: var(--r-0);
+  color: var(--text);
+  font: var(--fs-sm) var(--font-mono);
+  letter-spacing: 0.04em;
+}
+.field::placeholder {
+  color: var(--text-3);
+}
+.field:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+/* Card — hairline border, lifts on white glow */
+.card {
+  background: var(--bg-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: var(--sp-5);
+  transition: var(--t);
+  position: relative;
+}
+.card:hover {
+  border-color: var(--border-h);
+  box-shadow: var(--glow);
+}
+.card__title {
+  font-size: var(--fs-h2);
+  color: var(--text);
+}
+.card__meta {
+  font: var(--fs-label) var(--font-mono);
+  color: var(--text-3);
+  letter-spacing: 0.1em;
+}
+
+/* Top-rule accent that wipes in on hover (project/experience cards) */
+.card--rule::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--white), transparent);
+  transform: scaleX(0);
+  transition: var(--t);
+}
+.card--rule:hover::before {
+  transform: scaleX(1);
+}
+
+/* Segmented toggle (ALL / ASC / DESC · DARK / PAPER) */
+.seg {
+  display: inline-flex;
+  border: 1px solid var(--border-h);
+  background: var(--bg-3);
+  border-radius: var(--r-0);
+}
+.seg button {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  border-left: 1px solid var(--border);
+  color: var(--text-2);
+  padding: 0 12px;
+  height: 30px;
+  cursor: pointer;
+  font: 11px var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  transition: var(--t);
+}
+.seg button:first-child {
+  border-left: 0;
+}
+.seg button:hover {
+  color: var(--text);
+}
+.seg button[aria-pressed='true'] {
+  background: var(--accent);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+/* Divider */
+.rule {
+  border: 0;
+  border-top: 1px solid var(--border);
+  margin: var(--sp-5) 0;
+}
+
+/* ========================================================================== */
+/*  5b. FOOTER + LINKS (author · GitHub repo · Ko-fi)                          */
+/* ========================================================================== */
+/* Consistent sign-off footer. Markup:
+   <footer class="site-foot">
+     <span>© 2026 Pavan Muguda Sanjeevamurthy</span>
+     <span class="foot-sep">·</span>
+     <a class="foot-link" href="https://github.com/pmuguda/<repo>" target="_blank" rel="noopener">
+       <svg class="gi" viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
+       Repo
+     </a>
+     <a class="foot-link kofi" href="https://ko-fi.com/pavan_muguda" target="_blank" rel="noopener">
+       <svg class="gi" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M23.88 8.94c-.36-1.86-2.1-2.86-3.84-2.86h-.78V5.2c0-.66-.54-1.2-1.2-1.2H2.04C1.2 4 .6 4.66.6 5.46v8.7c0 2.94 2.4 5.34 5.34 5.34h6.18c2.7 0 4.92-1.98 5.28-4.56h.66c2.82 0 4.86-2.7 3.82-5.4zm-4.5 3.06h-.42V8.7h.54c.96 0 1.74.78 1.74 1.74-.06.9-.84 1.62-1.86 1.56zM7.74 14.7c-.18.06-.36-.06-.42-.18-1.14-1.5-3.18-3.06-3.18-5.16 0-1.86 2.1-2.64 3.42-1.08 1.32-1.56 3.42-.72 3.42 1.08 0 2.1-2.04 3.66-3.24 5.34z"/></svg>
+       Support on Ko-fi
+     </a>
+   </footer>
+*/
+.site-foot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding: var(--sp-6) var(--sp-5);
+  border-top: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-3);
+  font: var(--fs-label) var(--font-mono);
+  letter-spacing: 0.06em;
+}
+.site-foot .foot-sep {
+  color: var(--accent);
+}
+
+/* Text link with icon — underline goes gold on hover */
+.foot-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--text-2);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-h);
+  padding-bottom: 1px;
+  transition: var(--t);
+}
+.foot-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.foot-link .gi {
+  width: 14px;
+  height: 14px;
+  flex: none;
+}
+.foot-link.kofi {
+  border: none;
+  color: var(--text-3);
+  white-space: nowrap;
+}
+.foot-link.kofi:hover {
+  color: var(--accent);
+}
+
+/* Square icon-only link button (GitHub / social row) */
+.icon-link {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: var(--r-0);
+  background: var(--bg-2);
+  color: var(--text-2);
+  text-decoration: none;
+  transition: var(--t);
+}
+.icon-link:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+  background: var(--bg-3);
+}
+.icon-link svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
+/* ========================================================================== */
+/*  6. MOTION GUARD                                                            */
+/* ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
